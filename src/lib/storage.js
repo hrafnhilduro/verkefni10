@@ -12,7 +12,9 @@ const LOCALSTORAGE_KEY = 'calc_game_scores';
  * @returns {array} Raðað fylki af svörum eða tóma fylkið ef ekkert vistað.
  */
 export function load() {
-  // todo útfæra
+  const savedData = localStorage.getItem(LOCALSTORAGE_KEY);
+
+  return JSON.parse(savedData);
 }
 
 /**
@@ -22,12 +24,18 @@ export function load() {
  * @param {number} points Stig sem á að vista
  */
 export function save(name, points) {
-  // todo útfæra
+  const data = { points, name };
+  let savedData = load();
+
+  if (!savedData) savedData = [];
+
+  savedData.push(data);
+  localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(savedData));
 }
 
 /**
  * Hreinsa öll stig úr localStorage
  */
 export function clear() {
-  // todo útfæra
+  localStorage.removeItem(LOCALSTORAGE_KEY);
 }

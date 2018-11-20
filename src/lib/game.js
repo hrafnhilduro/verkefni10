@@ -1,4 +1,8 @@
-// todo vísa í rétta hluti með import
+import { empty, el } from './helpers';
+import { save } from './storage';
+import question from './question';
+import Highscore, { score } from './highscore';
+
 
 // allar breytur hér eru aðeins sýnilegar innan þessa módúl
 
@@ -15,9 +19,18 @@ let currentProblem; // spurning sem er verið að sýna
  * Klárar leik. Birtir result og felur problem. Reiknar stig og birtir í result.
  */
 function finish() {
+  problem.classList.add('problem--hidden');
+  result.classList.remove('result--hidden');
+
+  const rs = result.querySelector('.result__text');
+
+  points = score(total, correct, playTime);
+
   const text = `Þú svaraðir ${correct} rétt af ${total} spurningum og fékkst ${points} stig fyrir. Skráðu þig á stigatöfluna!`;
 
-  // todo útfæra
+  empty(rs);
+  rs.appendChild(el('p', text));
+
 }
 
 /**
@@ -37,6 +50,10 @@ function tick(current) {
     return finish();
   }
 
+  const time = problem.querySelector('.problem__timer');
+  empty(time);
+  time.appendChild(el('p', `${current}`));
+
   return () => {
     setTimeout(tick(current - 1), 1000);
   };
@@ -46,7 +63,12 @@ function tick(current) {
  * Býr til nýja spurningu og sýnir undir .problem__question
  */
 function showQuestion() {
-  // todo útfæra
+  currentProblem = question();
+
+  const formula = problem.querySelector('.problem__question');
+
+  empty(formula);
+  formula.appendChild(el('p', currentProblem.problem));
 }
 
 /**
@@ -58,7 +80,15 @@ function showQuestion() {
  * - Sýnir fyrstu spurningu
  */
 function start() {
-  // todo útfæra
+  startButton.classList.add('button--hidden');
+  problem.classList.remove('problem--hidden');
+  total = 0;
+  correct = 0;
+  problem.querySelector('input').value = '';
+
+  setTimeout(tick(playTime), 1000);
+
+  showQuestion();
 }
 
 /**
@@ -70,7 +100,11 @@ function start() {
 function onSubmit(e) {
   e.preventDefault();
 
-  // todo útfæra
+  const ans = problem.querySelector('input');
+
+  if (parseInt(ans.value, 10) === currentProblem.answer) correct += 1;
+  total += 1;
+  ans.value = '';
 
   showQuestion();
 }
@@ -83,11 +117,15 @@ function onSubmit(e) {
 function onSubmitScore(e) {
   e.preventDefault();
 
-  // todo útfæra
+  const { value } = result.querySelector('input');
+  save(value, points);
 
   result.classList.add('result--hidden');
-  problem.classList.add('problem--hidden');
   startButton.classList.remove('button--hidden');
+
+  const highscore = new Highscore();
+  highscore.load();
+
 }
 
 /**
@@ -98,5 +136,11 @@ function onSubmitScore(e) {
 export default function init(_playTime) {
   playTime = _playTime;
 
-  // todo útfæra
+  startButton = document.querySelector('.start');
+  problem = document.querySelector('.problem');
+  result = document.querySelector('.result');
+
+  startButton.addEventListener('click', start);
+  problem.addEventListener('submit', onSubmit);
+  result.addEventListener('submit', onSubmitScore);
 }

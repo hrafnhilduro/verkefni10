@@ -1,4 +1,6 @@
-// todo vísa í rétta hluti með import
+
+import { load, clear } from './storage';
+import { empty, el } from './helpers';
 
 /**
  * Reikna út stig fyrir svör út frá heildarfjölda svarað á tíma.
@@ -12,7 +14,12 @@
  * @returns {number} Stig fyrir svör
  */
 export function score(total, correct, time) {
-  // todo útfæra
+  let points = (((correct / total) ** 2) + correct) * (total / time);
+  points = Math.round(points) * 100;
+
+  if (!points) points = 0;
+
+  return points;
 }
 
 /**
@@ -30,14 +37,18 @@ export default class Highscore {
    * Hlaða stigatöflu inn
    */
   load() {
-    // todo útfæra
+    const data = load();
+    if (data) this.highscore(data);
   }
 
   /**
    * Hreinsa allar færslur úr stigatöflu, tengt við takka .highscore__button
    */
   clear() {
-    // todo útfæra
+    empty(this.scores);
+    clear();
+    this.scores.appendChild(el('p', 'Engin stig skráð'));
+    this.button.classList.add('highscore__button--hidden');
   }
 
   /**
@@ -46,6 +57,27 @@ export default class Highscore {
    * @param {array} data Fylki af færslum í stigatöflu
    */
   highscore(data) {
-    // todo útfæra
+    const table = data;
+    const list = [];
+
+    table.sort((a, b) => b.points - a.points);
+
+    table.forEach((item) => {
+      const li = el('li');
+      const points = el('div', `${item.points} stig`);
+      const name = el('span', item.name);
+
+      points.classList.add('highscore__number');
+      name.classList.add('highscore__name');
+
+      li.appendChild(points);
+      li.appendChild(name);
+      list.push(li);
+    });
+
+    empty(this.scores);
+
+    this.scores.appendChild(el('ol', ...list));
+    this.button.classList.remove('highscore__button--hidden');
   }
 }
